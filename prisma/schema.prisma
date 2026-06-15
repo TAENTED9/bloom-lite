@@ -1,0 +1,64 @@
+// Bloom Lite — Prisma schema
+// PROTOTYPE ONLY: Nigeria hardcoded as recipient country for demo purposes.
+// Production will support dynamic corridors (JP -> NG, JP -> GH, JP -> KE, JP -> IN, etc.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // PROTOTYPE: SQLite (local file) for zero-setup local dev. For production,
+  // switch provider to "postgresql" and point DATABASE_URL at a Postgres server
+  // (e.g. Neon or a local Postgres). No schema changes are required.
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  fullName     String
+  passwordHash String
+  country      String // "JP" for sender, "NG" for recipient
+  currency     String // "JPY" or "NGN"
+  wallet       Wallet?
+
+  sentTransfers     Transfer[] @relation("Sender")
+  receivedTransfers Transfer[] @relation("Recipient")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wallet {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id])
+  encryptedPrivateKey String
+  publicKey           String
+  balanceUsdc         Float    @default(0) // internal USDC balance
+  balanceFiat         Float    @default(0) // display balance in user's currency
+  fiatCurrency        String // "JPY" or "NGN"
+  network             String   @default("devnet")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Transfer {
+  id                String   @id @default(cuid())
+  senderId          String
+  sender            User     @relation("Sender", fields: [senderId], references: [id])
+  recipientId       String
+  recipient         User     @relation("Recipient", fields: [recipientId], references: [id])
+  amountFiat        Float // amount in sender's fiat (JPY)
+  amountUsdc        Float // internal USDC equivalent
+  recipientAmount   Float // amount recipient receives in NGN
+  senderCurrency    String // "JPY"
+  recipientCurrency String // "NGN"
+  exchangeRate      Float // JPY/NGN rate used
+  slippageBps       Int // slippage in basis points used
+  txSignature       String? // Solana transaction signature (simulated)
+  status            String   @default("pending") // pending | completed | failed
+  failureReason     String?
+  createdAt         DateTime @default(now())
+}
