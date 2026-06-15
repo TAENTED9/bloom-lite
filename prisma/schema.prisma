@@ -10,7 +10,7 @@ datasource db {
   // PROTOTYPE: SQLite (local file) for zero-setup local dev. For production,
   // switch provider to "postgresql" and point DATABASE_URL at a Postgres server
   // (e.g. Neon or a local Postgres). No schema changes are required.
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

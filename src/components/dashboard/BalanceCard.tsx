@@ -1,4 +1,7 @@
-import { Eye } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 export interface BalanceCardProps {
@@ -7,6 +10,8 @@ export interface BalanceCardProps {
 }
 
 export function BalanceCard({ formattedBalance, currency }: BalanceCardProps) {
+  const [hidden, setHidden] = useState(false);
+
   return (
     <Card
       padding="lg"
@@ -18,14 +23,34 @@ export function BalanceCard({ formattedBalance, currency }: BalanceCardProps) {
           <span className="text-sm font-medium text-text-muted">
             Your Bloom Wallet
           </span>
-          <Eye className="h-4 w-4 text-text-muted" aria-hidden />
+          <button
+            type="button"
+            onClick={() => setHidden((prev) => !prev)}
+            aria-label={hidden ? "Show balance" : "Hide balance"}
+            title={hidden ? "Show balance" : "Hide balance"}
+            className="rounded-lg p-1 text-text-muted transition-colors hover:bg-white/5 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            {hidden ? (
+              <EyeOff className="h-4 w-4" aria-hidden />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden />
+            )}
+          </button>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-5xl font-bold tracking-tight text-text-primary">
-            {formattedBalance}
+          <span
+            className={
+              hidden
+                ? "select-none text-5xl font-bold tracking-tight text-text-primary"
+                : "text-5xl font-bold tracking-tight text-text-primary"
+            }
+          >
+            {hidden ? "••••••" : formattedBalance}
           </span>
         </div>
-        <span className="text-sm text-text-muted">Available balance · {currency}</span>
+        <span className="text-sm text-text-muted">
+          Available balance · {currency}
+        </span>
       </div>
     </Card>
   );
